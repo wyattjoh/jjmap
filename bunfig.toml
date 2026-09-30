@@ -1,0 +1,3 @@
+# Varlock owns env loading (via `import "varlock/auto-load"` in the CLI entry),
+# so disable Bun's .env autoload. No preload: tests shouldn't need 1Password.
+env = false

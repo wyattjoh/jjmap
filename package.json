@@ -1,0 +1,57 @@
+{
+  "name": "jjmap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Sort a JMAP mailbox (Fastmail) into categories with TypeSafe Jev, from the terminal or a local browser app",
+  "license": "MIT",
+  "author": "Wyatt Johnson",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wyattjoh/jjmap.git"
+  },
+  "bin": {
+    "jjmap": "./src/tui/main.tsx"
+  },
+  "type": "module",
+  "module": "src/index.ts",
+  "scripts": {
+    "triage": "bun src/index.ts",
+    "tui": "bun src/tui/main.tsx",
+    "test": "bun test",
+    "web:demo": "bun src/tui/main.tsx --web --demo",
+    "web": "bun src/tui/main.tsx --web",
+    "dev:demo": "bun src/tui/main.tsx --web --demo --dev",
+    "dev": "bun src/tui/main.tsx --web --dev",
+    "test:web": "bunx playwright test",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/manrope": "^5.3.0",
+    "@opentui/core": "0.5.12",
+    "@opentui/react": "0.5.12",
+    "@typesafe-ai/sdk": "^0.6.0",
+    "@varlock/1password-plugin": "^2.0.4",
+    "@wyattjoh/jmap": "npm:@jsr/wyattjoh__jmap@^0.1.0",
+    "effect": "4.0.0-rc.117",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "varlock": "^1.20.0"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "1.85.0",
+    "@playwright/test": "^1.63.0",
+    "@types/bun": "latest",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "lefthook": "^2.1.14",
+    "oxfmt": "^0.70.0",
+    "oxlint": "^1.85.0",
+    "typescript": "^7"
+  },
+  "engines": {
+    "bun": ">=1.4.2"
+  }
+}
