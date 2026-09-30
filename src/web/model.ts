@@ -18,6 +18,10 @@ export const Card = Schema.Struct({
   subject: Schema.String,
   preview: Schema.String,
   receivedAt: Schema.String,
+  /**
+   * Text fields are filler (`--redact`), rendered muted.
+   */
+  redacted: Schema.optional(Schema.Boolean),
 });
 
 /**

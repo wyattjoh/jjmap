@@ -14,6 +14,7 @@ export function parseOptions(args: string[]) {
       web: { type: "boolean", default: false },
       demo: { type: "boolean", default: false },
       dev: { type: "boolean", default: false },
+      redact: { type: "boolean", default: false },
       help: { type: "boolean", short: "h", default: false },
       host: { type: "string" },
     },
@@ -24,6 +25,8 @@ export function parseOptions(args: string[]) {
   if (values.host !== undefined && !values.web) throw new Error("--host requires --web");
 
   if (values.dev && !values.web) throw new Error("--dev requires --web");
+
+  if (values.redact && !values.web) throw new Error("--redact requires --web");
   const host = values.host ?? "127.0.0.1";
 
   if (!isIPv4(host) || host === "0.0.0.0")
@@ -39,7 +42,7 @@ if (import.meta.main) {
 
     if (options.help) {
       console.log(
-        "Usage: jjmap [--web [--demo] [--dev] [--host IP]]\n\n  --web      Open the email sorting app\n  --demo     Synthetic web animation; no credentials, spending, or mail changes\n  --dev      Hot-reload the browser UI while editing\n  --host IP  Bind to a specific IPv4 address (default: 127.0.0.1)",
+        "Usage: jjmap [--web [--demo] [--dev] [--redact] [--host IP]]\n\n  --web      Open the email sorting app\n  --demo     Synthetic web animation; no credentials, spending, or mail changes\n  --dev      Hot-reload the browser UI while editing\n  --redact   Hide card senders, subjects and previews (for screen recordings)\n  --host IP  Bind to a specific IPv4 address (default: 127.0.0.1)",
       );
     } else {
       if (!options.demo) await import("varlock/auto-load");
@@ -47,7 +50,11 @@ if (import.meta.main) {
       if (options.web) {
         const { Effect } = await import("effect");
         const { launchWeb } = await import("../web/server.ts");
-        const clean = await Effect.runPromise(launchWeb(options.demo, options.host, options.dev));
+
+        const clean = await Effect.runPromise(
+          launchWeb(options.demo, options.host, options.dev, options.redact),
+        );
+
         process.exit(clean ? 0 : 1);
       } else {
         await (await import("./terminal.tsx")).runTerminal();

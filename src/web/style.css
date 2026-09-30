@@ -662,6 +662,11 @@ html:has(.stage)::view-transition-new(wizard) {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+.card-sender.redacted,
+.card-subject.redacted,
+.card-preview.redacted {
+  opacity: 0.22;
+}
 .card-bottom {
   margin-top: auto;
   display: flex;

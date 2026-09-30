@@ -117,9 +117,44 @@ export class Backend extends Context.Service<
 >()("jjmap/web/Backend") {}
 
 /**
- * Projects plain text only; email HTML is never sent to the browser or rendered.
+ * Random-length filler words for one card field. Keyed by a per-launch secret and the email id,
+ * so repeat projections of one email match while lengths never depend on the original text.
  */
-export function toCard(email: Message): Card {
+export function filler(key: string, minWords: number, maxWords: number) {
+  let state = 2166136261;
+
+  for (const char of key) state = Math.imul(state ^ char.charCodeAt(0), 16777619);
+
+  const next = (min: number, max: number) => {
+    state ^= state << 13;
+    state ^= state >>> 17;
+    state ^= state << 5;
+
+    return min + ((state >>> 0) % (max - min + 1));
+  };
+
+  return Array.from({ length: next(minWords, maxWords) }, () => "█".repeat(next(2, 9))).join(" ");
+}
+
+/**
+ * Projects plain text only; email HTML is never sent to the browser or rendered.
+ * A `redactSeed` swaps sender, subject and preview for filler before they leave the server
+ * (for screen recordings).
+ */
+export function toCard(email: Message, redactSeed?: string): Card {
+  const redacted = (field: string, minWords: number, maxWords: number) =>
+    filler(`${redactSeed}:${email.id}:${field}`, minWords, maxWords);
+
+  if (redactSeed !== undefined)
+    return {
+      id: email.id,
+      from: redacted("from", 1, 2),
+      subject: redacted("subject", 2, 7),
+      preview: redacted("preview", 10, 28),
+      receivedAt: email.receivedAt || "",
+      redacted: true,
+    };
+
   return {
     id: email.id,
     from: email.from?.[0]?.name || email.from?.[0]?.email || "Unknown sender",
@@ -208,8 +243,9 @@ interface ApiState {
 
 // Creates the API for one server launch. Disconnects and Stop finish only the
 // bounded set of in-flight emails.
-const make = Effect.fnUntraced(function* (token: string, origin: () => string) {
+const make = Effect.fnUntraced(function* (token: string, origin: () => string, redact: boolean) {
   const backend = yield* Backend;
+  const redactSeed = redact ? crypto.randomUUID() : undefined;
   const idle = yield* Deferred.make<void>();
   yield* Deferred.succeed(idle, undefined);
 
@@ -332,7 +368,7 @@ const make = Effect.fnUntraced(function* (token: string, origin: () => string) {
             status: 409,
             message: "A newer preview replaced this request",
           });
-        const batch: Batch = { id, scope, cards: emails.map(toCard) };
+        const batch: Batch = { id, scope, cards: emails.map((email) => toCard(email, redactSeed)) };
 
         return batch;
       }),
@@ -386,7 +422,7 @@ const make = Effect.fnUntraced(function* (token: string, origin: () => string) {
             yield* emit({
               type: "result",
               outcome: {
-                card: toCard(result.email),
+                card: toCard(result.email, redactSeed),
                 destination: destinationOf(result.plan),
                 plan: result.plan,
                 applied,
@@ -613,8 +649,9 @@ export class Api extends Context.Service<
 >()("jjmap/web/Api") {
   /**
    * One launch's API: `token` is the private link secret and `origin` the bound server origin.
+   * `redact` hides senders, subjects and previews on every card sent to the browser.
    */
-  static layer(token: string, origin: () => string) {
-    return Layer.effect(Api, make(token, origin));
+  static layer(token: string, origin: () => string, redact = false) {
+    return Layer.effect(Api, make(token, origin, redact));
   }
 }

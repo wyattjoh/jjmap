@@ -624,6 +624,18 @@ test("card projection excludes full bodies and treats HTML as plain text", () =>
   expect(card.subject).toBe("<script>never execute</script>");
 });
 
+test("redacted cards hide sender, subject and preview behind stable random filler", () => {
+  const email = { ...emails[0]!, subject: "Hi there", preview: "Your code is 4812" };
+  const card = toCard(email, "seed");
+
+  expect(card.redacted).toBe(true);
+
+  for (const text of [card.from, card.subject, card.preview]) expect(text).toMatch(/^[█ ]+$/);
+  expect(toCard(email, "seed")).toEqual(card);
+  expect(toCard(email, "other").preview).not.toBe(card.preview);
+  expect(toCard(email).redacted).toBeUndefined();
+});
+
 describe("streamed loads", () => {
   const stream = { accept: "application/x-ndjson" };
 

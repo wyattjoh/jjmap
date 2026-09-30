@@ -13,12 +13,17 @@ export interface WebServer {
  * Serves the HTML app and protected API on the selected host and an ephemeral port.
  * Defaults to loopback; the returned private URL determines the exact allowed origin.
  * Dev mode enables browser hot module reloading and echoes browser logs to the terminal.
+ * Redact mode swaps card senders, subjects and previews for random filler.
  * Closing the scope refuses new requests, waits for in-flight emails, then stops the server.
  */
-export const serveWeb = Effect.fn("serveWeb")(function* (hostname: string, dev: boolean) {
+export const serveWeb = Effect.fn("serveWeb")(function* (
+  hostname: string,
+  dev: boolean,
+  redact = false,
+) {
   const token = crypto.randomUUID();
   let origin = "";
-  const api = yield* Api.pipe(Effect.provide(Api.layer(token, () => origin)));
+  const api = yield* Api.pipe(Effect.provide(Api.layer(token, () => origin, redact)));
 
   const server = yield* Effect.acquireRelease(
     Effect.sync(() =>
@@ -93,10 +98,11 @@ export const runWeb = Effect.fn("runWeb")(function* <E>(
   label: string,
   hostname: string,
   dev: boolean,
+  redact = false,
 ) {
   const scope = yield* Scope.make();
 
-  const { url } = yield* serveWeb(hostname, dev).pipe(
+  const { url } = yield* serveWeb(hostname, dev, redact).pipe(
     Scope.provide(scope),
     Effect.provide(backend),
   );
@@ -127,11 +133,12 @@ export const launchWeb = Effect.fn("launchWeb")(function* (
   demo: boolean,
   hostname: string,
   dev: boolean,
+  redact = false,
 ) {
   if (demo) {
     const { DemoBackend } = yield* Effect.promise(() => import("./demo.ts"));
 
-    return yield* runWeb(DemoBackend(true), "synthetic demo", hostname, dev);
+    return yield* runWeb(DemoBackend(true), "synthetic demo", hostname, dev, redact);
   }
 
   const { LiveBackend } = yield* Effect.promise(() => import("./backend.ts"));
@@ -139,7 +146,7 @@ export const launchWeb = Effect.fn("launchWeb")(function* (
   const { Paths } = yield* Effect.promise(() => import("../usage.ts"));
   const live = LiveBackend.pipe(Layer.provide(Layer.mergeAll(Connector.layer, Paths.layer)));
 
-  return yield* runWeb(live, "live mail", hostname, dev);
+  return yield* runWeb(live, "live mail", hostname, dev, redact);
 });
 
 // A credential-free entry for local animation tests; normal users run jjmap --web.

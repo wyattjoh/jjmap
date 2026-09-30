@@ -7,12 +7,14 @@ describe("CLI launch options — no credentials or services", () => {
       web: false,
       demo: false,
       dev: false,
+      redact: false,
       help: false,
       host: "127.0.0.1",
     });
     expect(parseOptions(["--web", "--demo", "--dev"]).dev).toBe(true);
     expect(parseOptions(["--web"]).host).toBe("127.0.0.1");
     expect(parseOptions(["-h"]).help).toBe(true);
+    expect(parseOptions(["--web", "--redact"]).redact).toBe(true);
   });
 
   test("accepts an explicit Tailscale address for live or demo web mode", () => {
@@ -20,6 +22,7 @@ describe("CLI launch options — no credentials or services", () => {
       web: true,
       demo: false,
       dev: false,
+      redact: false,
       help: false,
       host: "100.64.0.1",
     });
@@ -30,6 +33,7 @@ describe("CLI launch options — no credentials or services", () => {
     for (const args of [
       ["--demo"],
       ["--dev"],
+      ["--redact"],
       ["--host", "100.64.0.1"],
       ["--web", "--host"],
       ["--web", "--host", ""],

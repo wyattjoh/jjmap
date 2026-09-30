@@ -338,6 +338,7 @@ const EmailCard = memo(function EmailCard({
   flag: string | null;
 }) {
   const date = new Date(card.receivedAt);
+  const redacted = card.redacted ? " redacted" : "";
 
   return (
     <>
@@ -346,9 +347,9 @@ const EmailCard = memo(function EmailCard({
           ? "EMAIL"
           : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
       </div>
-      <div className="card-sender">{card.from}</div>
-      <div className="card-subject">{card.subject}</div>
-      <div className="card-preview">{card.preview}</div>
+      <div className={`card-sender${redacted}`}>{card.from}</div>
+      <div className={`card-subject${redacted}`}>{card.subject}</div>
+      <div className={`card-preview${redacted}`}>{card.preview}</div>
       <div className="card-bottom">
         <span className="card-tag" style={{ "--accent": category?.color ?? "#777" }}>
           <i />
