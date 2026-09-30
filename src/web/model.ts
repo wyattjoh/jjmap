@@ -262,7 +262,7 @@ export type RunEvent = typeof RunEvent.Type;
 /**
  * Bounded default inference parallelism; the API accepts one through eight workers.
  */
-export const DEFAULT_CONCURRENCY = 4;
+export const DEFAULT_CONCURRENCY = 8;
 
 /**
  * The paid work-in-flight limit, independent of the batch size.

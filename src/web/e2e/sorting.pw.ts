@@ -536,7 +536,7 @@ test("reference viewport: stacked 3D choreography, complete counts, and no paid 
   });
   await open(page);
   await expect(page.getByRole("spinbutton")).toHaveValue("100");
-  await expect(page.getByRole("combobox", { name: "Concurrent workers" })).toHaveValue("4");
+  await expect(page.getByRole("combobox", { name: "Concurrent workers" })).toHaveValue("8");
   await start(page);
   await expect(page.locator(".stack-zone > .section-label")).toContainText("QUEUE");
   await expect(page.locator(".stack-caption")).toContainText("Queue ·");
